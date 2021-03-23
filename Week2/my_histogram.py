@@ -114,9 +114,12 @@ def my_hist_equal(src):
     return dst, hist_equal # 평활화한 이미지와 히스토그램 반환
 
 if __name__ == '__main__':
-    src = cv2.imread('fruits_div3.jpg', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('sample.png', cv2.IMREAD_GRAYSCALE)
     hist = my_calcHist(src)
     dst, hist_equal = my_hist_equal(src)
+    cv2.imwrite('gray.jpg',src)
+    cv2.imwrite('sample2.jpg',dst)
+
 
     plt.figure(figsize=(8, 5))
     cv2.imshow('original', src)
@@ -128,7 +131,8 @@ if __name__ == '__main__':
     plt.show()
 
     plt.figure(figsize=(8, 5))
-    cv2.imshow('equalizetion after image', dst)
+    cv2.imshow('original', src)
+    cv2.imshow('equalization after image', dst)
     binX = np.arange(len(hist_equal))
     plt.title('my histogram equalization')
     plt.bar(binX, hist_equal, width=0.5, color='g')
