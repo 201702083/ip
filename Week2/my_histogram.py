@@ -4,73 +4,77 @@ import matplotlib.pyplot as plt
 
 def my_calcHist(src):
     src_sh = src.shape
-    hist = [0 for a in range(256)]
-    for i in range(0, src_sh[0]):
-        for j in range(0, src_sh[1]):
-            hist[src[i, j]] += 1
+    hist = [0 for a in range(256)] # 0 ~ 255 value 를 index로 갖음 
+    for i in range(0, src_sh[0]): # src의 세로 길이 
+        for j in range(0, src_sh[1]): # scr 의 가로 길이 
+            hist[src[i, j]] += 1 # i,j 픽셀의 value를 참조하여 hist 의 pixel num ++
 
     plt.plot(hist, color='r')
     plt.title('histogram plot')
     plt.xlabel('pixel intensity')
     plt.ylabel('pixel num')
     plt.show()
+	# 그래프 출력
     return hist
 
-def my_normalize_hist(histogram, pixel_num):
-    normalized_hist = [0 for i in range(len(histogram))]
-    for i in range(0, len(normalized_hist)):
-        normalized_hist[i] = histogram[i] / pixel_num
+def my_normalize_hist(histogram, pixel_num): # 정규화
+    normalized_hist = [0 for i in range(len(histogram))] # 반환할 리스트 생성
+    for i in range(0, len(normalized_hist)): 
+        normalized_hist[i] = histogram[i] / pixel_num # histogram의 각 값을 total pixel_num으로 나눔
     return normalized_hist
 
 
-def my_PDF2CDF(pdf):
-    cdf = pdf
-    for i in range(0, len(cdf)):
+def my_PDF2CDF(pdf): # 정규화 값 누적
+    cdf = pdf # 반환할 리스트 생성
+    for i in range(0, len(cdf)): 
         if i > 0:
-            cdf[i] = pdf[i] + pdf[i - 1]
+            cdf[i] = pdf[i] + pdf[i - 1] # cdf는 pdf의 값을 누적한 리스트
 
     plt.plot(cdf, color='r')
     plt.title('cdf plot')
     plt.xlabel('pixel intensity')
     plt.ylabel('pixel num')
     plt.show()
+	# 그래프 출력
     return cdf
 
 
-def my_denormalize(normalized, gray_level):
-    denormalized = normalized
-    for i in range(0 , len(denormalized)):
-        denormalized[i] = denormalized[i] * gray_level
+def my_denormalize(normalized, gray_level): 
+    denormalized = normalized # 반환할 리스트 생성 
+    for i in range(0 , len(denormalized)): 
+        denormalized[i] = denormalized[i] * gray_level # 각 값에 gray_level을 곱함
     return denormalized
 
 
-def my_calcHist_equalization(denormalized, hist):
-    hist_equal = [0 for i in range(len(hist))]
+def my_calcHist_equalization(denormalized, hist): # 평활화한 histogram 구하기
+    hist_equal = [0 for i in range(len(hist))] # 반환할 리스트 0으로 초기화
 
-    for i in range(0, len(denormalized)):
-        hist_equal[denormalized[i]] = hist[i]
+    for i in range(0, len(denormalized)): 
+        hist_equal[denormalized[i]] += hist[i] # floor[i]를 참조한 hist_equal에 hist[i]가누적
 
     plt.plot(hist_equal, color='r')
     plt.title('histogram_equalization plot')
     plt.xlabel('pixel intensity')
     plt.ylabel('pixel num')
     plt.show()
+	# 그래프 출력
     return hist_equal
 
 
-def my_equal_img(src, output_gray_level):
-    (h,w) = src.shape[:2]
-    dst = np.zeros((h,w), dtype = np.uint8)
+def my_equal_img(src, output_gray_level): # 평활화한 이미지를 반환
+    (h,w) = src.shape[:2] # 세로 가로 길이를 받아옴 
+    dst = np.zeros((h,w), dtype = np.uint8) # 받아온 크기에 맞춰 zeros 이미지로 생성
 
     for i in range(h):
         for j in range(w):
-            dst[i][j] = output_gray_level[src[i][j]]
+            dst[i][j] = output_gray_level[src[i][j]] # Y = Integral 0 to r ( histogram ) 
+						     # so 0 ~ src[i][j]의 누적값인 output_gray_level이다
 
     return dst
 
-def my_round(denormalized_output):
+def my_round(denormalized_output): # astype(int) 에서 오류가 발생하여 버림 함수 정의
     for i in range(0, len(denormalized_output)):
-        denormalized_output[i] = int(denormalized_output[i])
+        denormalized_output[i] = int(denormalized_output[i]) # 각 값을 int 형변환
 
     return denormalized_output
 
@@ -93,21 +97,21 @@ def my_hist_equal(src):
     hist_equal = my_calcHist_equalization(output_gray_level, histogram)
 
 
-    x = range(0,256)
+    x = range(0,256) # 0 ~ 255
     y = [0 for i in range(len(x))]
     for i in range(0,256):
-        y[i] = output_gray_level[i]
+        y[i] = output_gray_level[i] # Y = Integral 0 to x ( histogram ) = output_gray_level[x]
 
     plt.plot(x,y)
     plt.title('mapping function')
     plt.xlabel('input intensity')
     plt.ylabel('output intensity')
     plt.show()
-
+	# 그래프 출력
     ### dst : equalization 결과 image
     dst = my_equal_img(src, output_gray_level)
 
-    return dst, hist_equal
+    return dst, hist_equal # 평활화한 이미지와 히스토그램 반환
 
 if __name__ == '__main__':
     src = cv2.imread('fruits_div3.jpg', cv2.IMREAD_GRAYSCALE)
