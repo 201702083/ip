@@ -28,7 +28,7 @@ def my_PDF2CDF(pdf): # 정규화 값 누적
     cdf = pdf # 반환할 리스트 생성
     for i in range(0, len(cdf)): 
         if i > 0:
-            cdf[i] = pdf[i] + pdf[i - 1] # cdf는 pdf의 값을 누적한 리스트
+            cdf[i] = pdf[i] + cdf[i - 1] # cdf는 pdf의 값을 누적한 리스트
 
     plt.plot(cdf, color='r')
     plt.title('cdf plot')
@@ -114,7 +114,7 @@ def my_hist_equal(src):
     return dst, hist_equal # 평활화한 이미지와 히스토그램 반환
 
 if __name__ == '__main__':
-    src = cv2.imread('sample.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('gapcheon.jpeg', cv2.IMREAD_GRAYSCALE)
     hist = my_calcHist(src)
     dst, hist_equal = my_hist_equal(src)
     cv2.imwrite('gray.jpg',src)
