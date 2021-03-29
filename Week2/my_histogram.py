@@ -40,7 +40,7 @@ def my_PDF2CDF(pdf): # 정규화 값 누적
 
 
 def my_denormalize(normalized, gray_level): 
-    denormalized = normalized # 반환할 리스트 생성 
+    denormalized = normalized # 반환할 리스트 생성
     for i in range(0 , len(denormalized)): 
         denormalized[i] = denormalized[i] * gray_level # 각 값에 gray_level을 곱함
     return denormalized
@@ -85,9 +85,7 @@ def my_hist_equal(src):
     histogram = my_calcHist(src)
 
     normalized_histogram = my_normalize_hist(histogram, h * w)
-    for i in range(len(normalized_histogram)):
-        print(normalized_histogram[i],end= ' ')
-    print()
+
     normalized_output = my_PDF2CDF(normalized_histogram)
 
     denormalized_output = my_denormalize(normalized_output, max_gray_level)
@@ -114,6 +112,7 @@ def my_hist_equal(src):
     return dst, hist_equal # 평활화한 이미지와 히스토그램 반환
 
 if __name__ == '__main__':
+
     src = cv2.imread('gapcheon.jpeg', cv2.IMREAD_GRAYSCALE)
     hist = my_calcHist(src)
     dst, hist_equal = my_hist_equal(src)
