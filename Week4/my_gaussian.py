@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import cv2
 import time
@@ -7,7 +9,8 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from my_library.padding import my_padding
+from padding import my_padding
+
 
 
 def my_get_Gaussian2D_mask(msize, sigma=1):
@@ -15,21 +18,23 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
     # ToDo
     # 2D gaussian filter 만들기
     #########################################
-    y, x = ???
-    '''
-    y, x = np.mgrid[-1:2, -1:2]
-    y = [[-1,-1,-1],
-         [ 0, 0, 0],
-         [ 1, 1, 1]]
-    x = [[-1, 0, 1],
-         [-1, 0, 1],
-         [-1, 0, 1]]
-    '''
+
+    y, x = np.mgrid[-(msize//2):1+(msize//2),-(msize//2):1+(msize//2)]
+    # y = [[-1,-1,-1],
+    #      [ 0, 0, 0],
+    #      [ 1, 1, 1]]
+    # x = [[-1, 0, 1],
+    #      [-1, 0, 1],
+    #      [-1, 0, 1]]
+    f = x*x+y*y
+    # f = [[2,1,2],
+    #      [1,0,1],
+    #      [2,1,2]]
 
     # 2차 gaussian mask 생성
-    gaus2D = ???
+    gaus2D = ((np.math.e)**( -(f)/2))/2*math.pi
     # mask의 총 합 = 1
-    gaus2D /= ???
+    gaus2D /= np.sum(gaus2D)
 
     return gaus2D
 
@@ -39,19 +44,14 @@ def my_get_Gaussian1D_mask(msize, sigma=1):
     # ToDo
     # 1D gaussian filter 만들기
     #########################################
-    x = ???
-    '''
-    x = np.full((1, 3), [-1, 0, 1])
-    x = [[ -1, 0, 1]]
 
-    x = np.array([[-1, 0, 1]])
-    x = [[ -1, 0, 1]]
-    '''
+    x = np.arange(-(msize//2),(msize//2)+1).reshape(1,msize)
+    x = x*x
 
-    gaus1D = ???
+    gaus1D = (math.e)**(-(x/(2*sigma*sigma)))/math.sqrt(2*math.pi)
 
     # mask의 총 합 = 1
-    gaus1D /= ???
+    gaus1D /= np.sum(gaus1D)
     return gaus1D
 
 
@@ -80,7 +80,7 @@ def my_filtering(src, mask, pad_type='zero'):
 
 
 if __name__ == '__main__':
-    src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('Lena.png', cv2.IMREAD_GRAYSCALE)
     mask_size = 5
     gaus2D = my_get_Gaussian2D_mask(mask_size, sigma=1)
     gaus1D = my_get_Gaussian1D_mask(mask_size, sigma=1)
