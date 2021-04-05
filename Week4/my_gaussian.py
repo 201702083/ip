@@ -1,4 +1,3 @@
-import math
 
 import numpy as np
 import cv2
@@ -32,7 +31,8 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
     #      [2,1,2]]
 
     # 2차 gaussian mask 생성
-    gaus2D = ((np.math.e)**( -(f)/2))/2*math.pi
+    gaus2D = ((np.math.e)**( -(f)/2))/2*np.math.pi
+
 
     # mask의 총 합 = 1
     gaus2D /= np.sum(gaus2D)
@@ -47,8 +47,8 @@ def my_get_Gaussian1D_mask(msize, sigma=1):
     #########################################
 
     y, x = np.mgrid[0:1, -(msize // 2):1 + (msize // 2)]
-    mask = x+y
-    gaus1D = (math.e)**(-(mask/(2*sigma*sigma)))/math.sqrt(2*math.pi)
+    f = x*x+y*y
+    gaus1D = (np.math.e)**(-(f/(2*sigma*sigma)))/np.math.sqrt(2*np.math.pi)
     # mask의 총 합 = 1
     gaus1D /= np.sum(gaus1D)
     return gaus1D
@@ -58,12 +58,11 @@ def my_filtering(src, mask, pad_type='zero'): # 이미지, 마스크, 패딩타�
     (h, w) = src.shape
     # mask의 크기
     (m_h, m_w) = mask.shape #(1,5) (5,1)
-    print('마스크의 크기 : ',mask.shape)
     # 직접 구현한 my_padding 함수를 이용
     pad_img = my_padding(src, (m_h // 2, m_w // 2), pad_type)
 
-    print('<mask>')
-    print(mask)
+    # print('<mask>')
+    # print(mask)
 
     # 시간을 측정할 때 만 이 코드를 사용하고 시간측정 안하고 filtering을 할 때에는
     # 4중 for문으로 할 경우 시간이 많이 걸리기 때문에 2중 for문으로 사용하기.
@@ -80,13 +79,9 @@ def my_filtering(src, mask, pad_type='zero'): # 이미지, 마스크, 패딩타�
 
 if __name__ == '__main__':
     src = cv2.imread('Lena.png', cv2.IMREAD_GRAYSCALE)
-    mask_size = 5
+    mask_size = 111
     gaus2D = my_get_Gaussian2D_mask(mask_size, sigma=1)
     gaus1D = my_get_Gaussian1D_mask(mask_size, sigma=1)
-    print(gaus1D)
-    print(gaus1D.shape)
-    print(gaus1D.T)
-    print(gaus1D.T.shape)
     print('mask size : ', mask_size)
     print('1D gaussian filter')
     start = time.perf_counter()  # 시간 측정 시작

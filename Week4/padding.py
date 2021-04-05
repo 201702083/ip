@@ -8,7 +8,7 @@ def my_padding(src, pad_shape, pad_type='zero'):
     pad_img[p_h:p_h+h, p_w:p_w+w] = src # 가운데에 원본 이미지를 넣음
 
     if pad_type == 'repetition':
-        print('repetition padding')
+        # print('repetition padding')
         #########################################################
         # TODO                                                  #
         # repetition padding 완성                                #
@@ -31,7 +31,7 @@ def my_padding(src, pad_shape, pad_type='zero'):
             for j in range(w+p_w, w+2*p_w):
                 pad_img[i, j] = pad_img[i, w+p_w -1]
 
-    else:
-        print('zero padding')
+
+        # print('zero padding')
 
     return pad_img
