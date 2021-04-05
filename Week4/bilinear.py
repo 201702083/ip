@@ -9,20 +9,49 @@ def my_bilinear(src, scale):
     (h, w) = src.shape
     h_dst = int(h * scale + 0.5)
     w_dst = int(w * scale + 0.5)
+    # 홀수 -> 올림, 짝수 -> 버림
+    dst = np.zeros((h_dst, w_dst),dtype=np.uint8) #(3,3) size
+    if(scale < 1):
+        for row in range(h_dst):
+             for col in range(w_dst):
+                 i = row*scale
+                 j = col*scale
+                 dst[row][col] = src[int(row//scale)][int(col//scale)]
+        return dst
+    else:
+        # bilinear interpolation 적용 # 3x3 -> 15x15
+        for row in range(h_dst): # 0~14
+            for col in range(w_dst): # 0~14
+                i = int(row//scale) # 0 , 1 , 2
+                if ( i == h-1): i = i - 1 # 마지막 확대부분에서 인덱스 아웃 처리
+                j = int(col//scale) # 0 , 1 , 2
+                if ( j == w - 1) : j = j - 1 # ''
+                # print('i: ',i,' j: ',j)
+                # print('row: ',row,' col: ',col)
+                # a( j, src[i][j] ) b( j+1,src[i][j+1])
+                lin_x1 =( (int(src[i][j+1]) - int(src[i][j])) / scale ) * ( col - j*int(scale) ) + src[i][j]
+                # print(int(src[i][j+1]-src[i][j]),' int 밖에 씌움')
+                # print( int(src[i][j+1]) - int(src[i][j]), 'int 각각 ')
+                # print(int(src[i][j+1]) - int(src[i][j]),' / ',scale, ' * ( ',col,' - ',j*int(scale),' ) + ',src[i][j])
+                # if(lin_x1 > 255) : lin_x1 = 255
+                # elif(lin_x1<0):lin_x1 =0
+                # print(lin_x1)
+                lin_x2 =( (int(src[i+1][j+1]) - int(src[i+1][j])) / scale ) * (col - j*int(scale) ) + src[i+1][j]
+                # if(lin_x2 > 255) : lin_x2 = 255
+                # elif(lin_x2<0):lin_x2 =0
+                # print(lin_x2)
+                # a( i, lin_x1 ) b( i+1 , lin_x2 )
+                lin_y =( (( int(lin_x2) - int(lin_x1) )) / scale ) * ( row - i*int(scale) ) + lin_x1
+                # print('x1 : ',lin_x1,' x2: ',lin_x2, ' y: ',lin_y)
+                # print()
 
-    dst = np.zeros((h_dst, w_dst))
-
-    # bilinear interpolation 적용
-    for row in range(h_dst):
-        for col in range(w_dst):
-            # 참고로 꼭 한줄로 구현해야 하는건 아닙니다 여러줄로 하셔도 상관없습니다.(저도 엄청길게 구현했습니다.)
-            dst = ???
-    return dst
+                dst[row][col] = lin_y
+        return dst
 
 if __name__ == '__main__':
-    src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('Lena.png', cv2.IMREAD_GRAYSCALE)
 
-    scale = 1/2
+    scale = 1/7
     #이미지 크기 1/2배로 변경
     my_dst_mini = my_bilinear(src, scale)
     my_dst_mini = my_dst_mini.astype(np.uint8)

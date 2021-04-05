@@ -33,6 +33,7 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
 
     # 2차 gaussian mask 생성
     gaus2D = ((np.math.e)**( -(f)/2))/2*math.pi
+
     # mask의 총 합 = 1
     gaus2D /= np.sum(gaus2D)
 
@@ -45,20 +46,19 @@ def my_get_Gaussian1D_mask(msize, sigma=1):
     # 1D gaussian filter 만들기
     #########################################
 
-    x = np.arange(-(msize//2),(msize//2)+1).reshape(1,msize)
-    x = x*x
-
-    gaus1D = (math.e)**(-(x/(2*sigma*sigma)))/math.sqrt(2*math.pi)
-
+    y, x = np.mgrid[0:1, -(msize // 2):1 + (msize // 2)]
+    mask = x+y
+    gaus1D = (math.e)**(-(mask/(2*sigma*sigma)))/math.sqrt(2*math.pi)
     # mask의 총 합 = 1
     gaus1D /= np.sum(gaus1D)
     return gaus1D
 
 
-def my_filtering(src, mask, pad_type='zero'):
+def my_filtering(src, mask, pad_type='zero'): # 이미지, 마스크, 패딩타입
     (h, w) = src.shape
     # mask의 크기
-    (m_h, m_w) = mask.shape
+    (m_h, m_w) = mask.shape #(1,5) (5,1)
+    print('마스크의 크기 : ',mask.shape)
     # 직접 구현한 my_padding 함수를 이용
     pad_img = my_padding(src, (m_h // 2, m_w // 2), pad_type)
 
@@ -68,14 +68,13 @@ def my_filtering(src, mask, pad_type='zero'):
     # 시간을 측정할 때 만 이 코드를 사용하고 시간측정 안하고 filtering을 할 때에는
     # 4중 for문으로 할 경우 시간이 많이 걸리기 때문에 2중 for문으로 사용하기.
     dst = np.zeros((h, w))
-    for row in range(h):
-        for col in range(w):
-            sum = 0
-            for m_row in range(m_h):
-                for m_col in range(m_w):
-                    sum += pad_img[row + m_row, col + m_col] * mask[m_row, m_col]
-            dst[row, col] = sum
+    #dst = np.sum(src * mask)
 
+
+
+    for y in range(h):
+        for x in range(w):
+            dst[y,x] = np.sum(np.multiply(mask,pad_img[y:y+m_h,x:x+m_w]))
     return dst
 
 
@@ -84,7 +83,10 @@ if __name__ == '__main__':
     mask_size = 5
     gaus2D = my_get_Gaussian2D_mask(mask_size, sigma=1)
     gaus1D = my_get_Gaussian1D_mask(mask_size, sigma=1)
-
+    print(gaus1D)
+    print(gaus1D.shape)
+    print(gaus1D.T)
+    print(gaus1D.T.shape)
     print('mask size : ', mask_size)
     print('1D gaussian filter')
     start = time.perf_counter()  # 시간 측정 시작
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     dst_gaus2D = my_filtering(src, gaus2D)
     end = time.perf_counter()  # 시간 측정 끝
     print('2D time : ', end - start)
-
+    # 마스크의 크기를 99로 했을 때 2차원의 시간측정 값이 1차원의 2배
     dst_gaus1D = np.clip(dst_gaus1D + 0.5, 0, 255)
     dst_gaus1D = dst_gaus1D.astype(np.uint8)
     dst_gaus2D = np.clip(dst_gaus2D + 0.5, 0, 255)
