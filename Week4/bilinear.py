@@ -26,26 +26,27 @@ def my_bilinear(src, scale):
                 if ( i == h-1): i = i - 1 # 마지막 확대부분에서 인덱스 아웃 처리
                 j = int(col//scale) # 0 , 1 , 2
                 if ( j == w - 1) : j = j - 1 # ''
+                lin_x1 =( (int(src[i][j+1]) - int(src[i][j])) / scale ) * ( col - j*int(scale) ) + src[i][j]
+                lin_x2 =( (int(src[i+1][j+1]) - int(src[i+1][j])) / scale ) * (col - j*int(scale) ) + src[i+1][j]
+                lin_y =( (( int(lin_x2) - int(lin_x1) )) / scale ) * ( row - i*int(scale) ) + lin_x1
+                dst[row][col] = lin_y
+
                 # print('i: ',i,' j: ',j)
                 # print('row: ',row,' col: ',col)
                 # a( j, src[i][j] ) b( j+1,src[i][j+1])
-                lin_x1 =( (int(src[i][j+1]) - int(src[i][j])) / scale ) * ( col - j*int(scale) ) + src[i][j]
                 # print(int(src[i][j+1]-src[i][j]),' int 밖에 씌움')
                 # print( int(src[i][j+1]) - int(src[i][j]), 'int 각각 ')
                 # print(int(src[i][j+1]) - int(src[i][j]),' / ',scale, ' * ( ',col,' - ',j*int(scale),' ) + ',src[i][j])
                 # if(lin_x1 > 255) : lin_x1 = 255
                 # elif(lin_x1<0):lin_x1 =0
                 # print(lin_x1)
-                lin_x2 =( (int(src[i+1][j+1]) - int(src[i+1][j])) / scale ) * (col - j*int(scale) ) + src[i+1][j]
                 # if(lin_x2 > 255) : lin_x2 = 255
                 # elif(lin_x2<0):lin_x2 =0
                 # print(lin_x2)
                 # a( i, lin_x1 ) b( i+1 , lin_x2 )
-                lin_y =( (( int(lin_x2) - int(lin_x1) )) / scale ) * ( row - i*int(scale) ) + lin_x1
                 # print('x1 : ',lin_x1,' x2: ',lin_x2, ' y: ',lin_y)
                 # print()
 
-                dst[row][col] = lin_y
         return dst
 
 if __name__ == '__main__':

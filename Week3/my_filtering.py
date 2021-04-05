@@ -83,8 +83,15 @@ def my_filtering(src, ftype, fshape, pad_type='zero'): # 디폴트는 제로패
 
 
             filtervalue = np.sum(origin*mask)
-            if(filtervalue < 0) : filtervalue = 0
-            if(filtervalue > 255) : filtervalue = 255
+            print(filtervalue,'no if')
+            if(filtervalue < 0) :
+                print('!!!')
+                filtervalue = 0
+            if(filtervalue > 255) :
+                print('!!!!')
+                filtervalue = 255
+
+            print(filtervalue,'if')
             dst[i-fshape[0]//2,j-fshape[1]//2] = filtervalue
 
     dst = (dst+0.5).astype(np.uint8)
