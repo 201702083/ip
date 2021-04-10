@@ -50,7 +50,7 @@ def my_bilinear(src, scale):
         return dst
 
 if __name__ == '__main__':
-    src = cv2.imread('Lena.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
 
     scale = 1/7
     #이미지 크기 1/2배로 변경

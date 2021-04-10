@@ -78,7 +78,7 @@ def my_filtering(src, mask, pad_type='zero'): # 이미지, 마스크, 패딩타�
 
 
 if __name__ == '__main__':
-    src = cv2.imread('Lena.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
     mask_size = 111
     gaus2D = my_get_Gaussian2D_mask(mask_size, sigma=1)
     gaus1D = my_get_Gaussian1D_mask(mask_size, sigma=1)
