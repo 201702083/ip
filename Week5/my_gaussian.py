@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from padding import my_padding
+from using_myfunc.padding import my_padding
 
 
 
@@ -31,7 +31,7 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
     #      [2,1,2]]
 
     # 2차 gaussian mask 생성
-    gaus2D = ((np.math.e)**( -(f)/2))/2*np.math.pi
+    gaus2D = ((np.math.e)**( -(f)/(2*sigma*sigma)))/2*np.math.pi
 
 
     # mask의 총 합 = 1
