@@ -15,8 +15,7 @@ def my_bilinear(src, scale):
 
         for row in range(h_dst):
              for col in range(w_dst):
-                 i = row*scale
-                 j = col*scale
+
                  dst[row][col] = src[int(row//scale)][int(col//scale)]
         return dst
     else:
