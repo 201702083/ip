@@ -10,8 +10,9 @@ def my_bilinear(src, scale):
     h_dst = int(h * scale + 0.5)
     w_dst = int(w * scale + 0.5)
     # 홀수 -> 올림, 짝수 -> 버림
-    dst = np.zeros((h_dst, w_dst),dtype=np.uint8) #(3,3) size
     if(scale < 1):
+        dst = np.zeros((h_dst, w_dst), dtype=np.uint8)
+
         for row in range(h_dst):
              for col in range(w_dst):
                  i = row*scale
@@ -19,6 +20,8 @@ def my_bilinear(src, scale):
                  dst[row][col] = src[int(row//scale)][int(col//scale)]
         return dst
     else:
+        dst = np.zeros((h_dst+1, w_dst+1), dtype=np.uint8)  # 버림된 1 픽셀을 복구하기 위해 +1을 해준다.
+
         # bilinear interpolation 적용 # 3x3 -> 15x15
         for row in range(h_dst): # 0~14
             for col in range(w_dst): # 0~14
@@ -59,7 +62,6 @@ if __name__ == '__main__':
     #이미지 크기 2배로 변경(Lena.png 이미지의 shape는 (512, 512))
     my_dst = my_bilinear(my_dst_mini, 1/scale)
     my_dst = my_dst.astype(np.uint8)
-
     cv2.imshow('original', src)
     cv2.imshow('my bilinear mini', my_dst_mini)
     cv2.imshow('my bilinear', my_dst)
