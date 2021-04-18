@@ -31,7 +31,8 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
     #      [2,1,2]]
 
     # 2차 gaussian mask 생성
-    gaus2D = ((np.math.e)**( -(f)/(2*sigma**2)))/2*np.math.pi
+    # gaus2D = ((np.math.e)**( -(f)/(2*sigma**2)))/2*np.math.pi
+    gaus2D = np.exp( -f / (2*(sigma**2)) ) / (2*np.pi * (sigma**2))
 
 
     # mask의 총 합 = 1
