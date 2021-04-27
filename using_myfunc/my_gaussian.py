@@ -19,20 +19,8 @@ def my_get_Gaussian2D_mask(msize, sigma=1):
     #########################################
 
     y, x = np.mgrid[-(msize//2):1+(msize//2),-(msize//2):1+(msize//2)]
-    # y = [[-1,-1,-1],
-    #      [ 0, 0, 0],
-    #      [ 1, 1, 1]]
-    # x = [[-1, 0, 1],
-    #      [-1, 0, 1],
-    #      [-1, 0, 1]]
-    f = x*x+y*y
-    # f = [[2,1,2],
-    #      [1,0,1],
-    #      [2,1,2]]
 
-    # 2차 gaussian mask 생성
-    # gaus2D = ((np.math.e)**( -(f)/(2*sigma**2)))/2*np.math.pi
-    gaus2D = np.exp( -f / (2*(sigma**2)) ) / (2*np.pi * (sigma**2))
+    gaus2D = 1 / ( 2 * np.pi * sigma**2) * np.exp( -((x**2+y**2) / (2*sigma**2)))
 
 
     # mask의 총 합 = 1
@@ -46,11 +34,8 @@ def my_get_Gaussian1D_mask(msize, sigma=1):
     # ToDo
     # 1D gaussian filter 만들기
     #########################################
-
-    y, x = np.mgrid[0:1, -(msize // 2):1 + (msize // 2)]
-    f = x*x+y*y
-    gaus1D = (np.math.e)**(-(f/(2*sigma*sigma)))/np.math.sqrt(2*np.math.pi)
-    # mask의 총 합 = 1
+    x = np.full( (1,msize), range [ -(msize//2), (msize//2)+1])
+    gaus1D = 1 / ( np.sqrt (2*np.pi) * sigma) * np.exp ( -( (x*x)/(2*sigma*sigma)))
     gaus1D /= np.sum(gaus1D)
     return gaus1D
 

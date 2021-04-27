@@ -14,22 +14,15 @@ def my_padding(src, pad_shape, pad_type='zero'):
         # repetition padding 완성                                #
         #########################################################
         #up
-        for i in range(0,p_h):
-            for j in range(p_w,w+p_w):
-                pad_img[i,j] = pad_img[p_h,j]
+        pad_img[:p_h, p_w:p_w+w] = src[0,:]
         #down
-        for i in range(p_h+h, 2*p_h+h):
-            for j in range(p_w, w + p_w ):
-                pad_img[i, j] = pad_img[p_h+h-1, j]
-
+        pad_img[p_h+h:, p_w:p_w+w] = src[h-1,:]
         #left
-        for i in range(0,h+2*p_h):
-            for j in range(0,p_w):
-                pad_img[i,j] = pad_img[i,p_w]
+        pad_img[:,:p_w] = pad_img[:,p_w:p_w+1]
+
         #right
-        for i in range(0, h + 2 * p_h):
-            for j in range(w+p_w, w+2*p_w):
-                pad_img[i, j] = pad_img[i, w+p_w -1]
+        pad_img[:,p_w+w:] = pad_img[:,p_w+w-1:p_w+w]
+
 
     else:
         print('zero padding')
