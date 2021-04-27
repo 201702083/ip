@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
 from using_myfunc.DoG import *
+from using_myfunc.my_gaussian import my_filtering
 from using_myfunc.padding import my_padding
+
+
 # low-pass filter를 적용 후 high-pass filter적용
 def apply_lowNhigh_pass_filter(src, fsize, sigma=1):
     # low-pass filter를 이용하여 blur효과
@@ -13,8 +16,9 @@ def apply_lowNhigh_pass_filter(src, fsize, sigma=1):
     # apply_lowNhigh_pass_filter 완성          #
     # Ix와 Iy 구하기                            #
     ###########################################
-    Ix,Iy = get_DoG_filter(fsize,sigma)
-    return my_filtering(src,Ix,'repetition'), my_filtering(src,Iy,'repetition')
+    Ix, Iy = get_DoG_filter(fsize, sigma)
+    return my_filtering(src, Ix, 'repetition'), my_filtering(src, Iy, 'repetition')
+
 
 # Ix와 Iy의 magnitude를 구함
 def calcMagnitude(Ix, Iy):
@@ -27,8 +31,9 @@ def calcMagnitude(Ix, Iy):
     magnitude = np.abs(Ix) + np.abs(Iy)
     return magnitude
 
+
 # Ix와 Iy의 angle을 구함
-def calcAngle(Ix, Iy): #
+def calcAngle(Ix, Iy):  #
     ###################################################
     # TODO                                            #
     # calcAngle 완성                                   #
@@ -37,8 +42,9 @@ def calcAngle(Ix, Iy): #
     # np.arctan 사용하기(np.arctan2 사용하지 말기)        #
     ###################################################
     e = 1E-6
-    angle = np.arctan(Iy/(Ix+e))
+    angle = np.arctan(Iy / (Ix + e))
     return angle
+
 
 # non-maximum supression 수행
 def non_maximum_supression(magnitude, angle):
@@ -49,38 +55,34 @@ def non_maximum_supression(magnitude, angle):
     # largest_magnitude     : non_maximum_supression 결과(가장 강한 edge만 남김)           #
     ####################################################################################
     # largest_magnitude = np.zeros(magnitude.shape)
-    #제로패딩해서 가장자리 부분도 supression이 가능하게
-    largest_magnitude = magnitude
-    dst = my_padding(magnitude,(1,1),'zero').astype(np.float64) # size ( h+2, w+2 )
-    #magnitude 의 모든 픽셀을 돌며 검사
-    h,w = magnitude.shape
+    # 제로패딩해서 가장자리 부분도 supression이 가능하게
+    largest_magnitude = np.zeros(magnitude.shape)
+
+    dst = my_padding(magnitude, (1, 1), 'zero').astype(np.float64)  # size ( h+2, w+2 )
+    # magnitude 의 모든 픽셀을 돌며 검사
+    h, w = magnitude.shape
     for row in range(h):
         for col in range(w):
             # 각 픽셀의 엣지와 수직인 각도인 angle을 통해 case 를 나눈다.
-            grad = angle[row][col] # -ㅠ/2 ~ + ㅠ/2
-            d_r = row+1
-            d_c = col+1
-            if ( grad < - (np.pi/4)):
-                f1 = (1/np.tan(grad)) * dst[d_r -1][d_c + 1] + (1 - (1/np.tan(grad))) * dst[d_r -1, d_c]
-                f2 = (1/np.tan(grad)) * dst[d_r +1][d_c - 1] + (1 - (1/np.tan(grad))) * dst[d_r +1, d_c]
-
+            grad = angle[row][col]  # -ㅠ/2 ~ + ㅠ/2
+            d_r = row + 1
+            d_c = col + 1
+            if (grad < - (np.pi / 4)):
+                f1 = (1 / np.tan(grad)) * dst[d_r - 1][d_c + 1] + (1 - (1 / np.tan(grad))) * dst[d_r - 1, d_c]
+                f2 = (1 / np.tan(grad)) * dst[d_r + 1][d_c - 1] + (1 - (1 / np.tan(grad))) * dst[d_r + 1, d_c]
             elif (grad < 0):
-                f1 = np.tan(grad) * dst[d_r - 1][d_c + 1] + (1 - np.tan(grad)) * dst[d_r , d_c + 1]
+                f1 = np.tan(grad) * dst[d_r - 1][d_c + 1] + (1 - np.tan(grad)) * dst[d_r, d_c + 1]
                 f2 = np.tan(grad) * dst[d_r + 1][d_c - 1] + (1 - np.tan(grad)) * dst[d_r, d_c - 1]
-
-            elif (grad < np.pi/4):
+            elif (grad < np.pi / 4):
                 f1 = np.tan(grad) * dst[d_r + 1][d_c + 1] + (1 - np.tan(grad)) * dst[d_r, d_c + 1]
                 f2 = np.tan(grad) * dst[d_r - 1][d_c - 1] + (1 - np.tan(grad)) * dst[d_r, d_c - 1]
-
-            elif (grad <= np.pi/2):
+            elif (grad <= np.pi / 2):
                 f1 = (1 / np.tan(grad)) * dst[d_r + 1][d_c + 1] + (1 - (1 / np.tan(grad))) * dst[d_r + 1, d_c]
                 f2 = (1 / np.tan(grad)) * dst[d_r - 1][d_c - 1] + (1 - (1 / np.tan(grad))) * dst[d_r - 1, d_c]
-
             f3 = magnitude[row][col]
 
-            if (f3 < f1) | (f3 < f2):
-                largest_magnitude[row][col] = 0
-
+            if (f3 >= f1) & (f3 >= f2):
+                largest_magnitude[row][col] = f3
 
     return largest_magnitude
 
@@ -89,7 +91,7 @@ def non_maximum_supression(magnitude, angle):
 def double_thresholding(src):
     dst = src.copy()
 
-    #dst => 0 ~ 255
+    # dst => 0 ~ 255
     dst -= dst.min()
     dst /= dst.max()
     dst *= 255
@@ -106,9 +108,31 @@ def double_thresholding(src):
     # double_thresholding 완성                            #
     # dst     : double threshold 실행 결과 이미지           #
     ######################################################
-    ret , dst_high = cv2.threshold(dst , high_threshold_value , 255 , cv2.THRESH_BINARY)
-    ret , dst_row = cv2.threshold(dst, low_threshold_value , 127 , cv2.THRESH_BINARY)
-    return cv2.add(dst_high , dst_row)
+    ret, dst_high = cv2.threshold(dst, high_threshold_value, 255, cv2.THRESH_BINARY)
+    ret, dst_row = cv2.threshold(dst, low_threshold_value, 127, cv2.THRESH_BINARY)
+    high_pad = my_padding(dst_high, (1, 1), 'zero')  # size ( h+2, w+2 )
+    cv2.imshow('double',cv2.add(dst_row,dst_high))
+    change = 1
+    while(change != 0):
+        change = 0
+        for row in range ( h  ):
+            for col in range ( w ) :
+                high = high_pad[row:row+2 , col : col+2]
+                if ( np.sum(high) > 0) & (dst_row[row][col] == 127):
+                    dst_row[row][col] = 255
+                    high_pad[row+1][col+1] = 255
+                    change = 1
+                elif dst_row[row][col] == 255:
+                    dst_row[row][col] = 255
+                elif dst_row[row][col] == 127:
+                    dst_row[row][col] = 127
+
+    for row in range ( h  ):
+        for col in range ( w ) :
+            if(dst_row[row][col] == 127) : dst_row[row][col] = 0
+
+    return dst_row
+
 
 def my_canny_edge_detection(src, fsize=3, sigma=1):
     # low-pass filter를 이용하여 blur효과
@@ -152,6 +176,7 @@ def my_canny_edge_detection(src, fsize=3, sigma=1):
     # double thresholding 수행
     dst = double_thresholding(largest_magnitude)
     return dst
+
 
 def main():
     src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
