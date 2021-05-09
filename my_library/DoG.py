@@ -4,7 +4,7 @@ import numpy as np
 # library add
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from using_myfunc.my_gaussian import my_filtering
+from my_library.my_gaussian import my_filtering
 def get_DoG_filter(fsize, sigma=1):
     ###################################################
     # TODO                                            #
