@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-from using_myfunc.DoG import *
-from using_myfunc.my_gaussian import my_filtering
-from using_myfunc.padding import my_padding
+from my_library.DoG import *
+from my_library.my_gaussian import my_filtering
+from my_library.padding import my_padding
 
 
 # low-pass filter를 적용 후 high-pass filter적용

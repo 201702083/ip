@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 
 import os, sys
-from using_myfunc.DoG import *
+from my_library.DoG import *
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from using_myfunc.my_gaussian import my_filtering
+from my_library.my_gaussian import my_filtering
 
 if __name__ == '__main__':
     # main()
