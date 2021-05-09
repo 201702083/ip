@@ -2,7 +2,7 @@ import math
 
 import cv2
 import numpy as np
-from using_myfunc.padding import my_padding
+from my_library.padding import my_padding
 
 msize = 5
 sigma = 1
