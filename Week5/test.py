@@ -4,8 +4,8 @@ import numpy as np
 # library add
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from using_myfunc.my_gaussian import my_get_Gaussian2D_mask
-from using_myfunc.my_gaussian import my_filtering
+from my_library.my_gaussian import my_get_Gaussian2D_mask
+from my_library.my_gaussian import my_filtering
 print(30 * np.sqrt(np.math.e))
 src = cv2.imread('../imgs/sobel_test.png', cv2.IMREAD_GRAYSCALE)
 print(src)

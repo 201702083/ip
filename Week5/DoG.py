@@ -4,8 +4,8 @@ import numpy as np
 # library add
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from using_myfunc.my_gaussian import my_filtering
-from using_myfunc.my_gaussian import my_get_Gaussian2D_mask
+from my_library.my_gaussian import my_filtering
+from my_library.my_gaussian import my_get_Gaussian2D_mask
 def get_DoG_filter(fsize, sigma=1):
     ###################################################
     # TODO                                            #
@@ -13,12 +13,12 @@ def get_DoG_filter(fsize, sigma=1):
     ###################################################
     b, a = np.mgrid[-(fsize//2):1+(fsize//2),-(fsize//2):1+(fsize//2)]
     gaus = my_get_Gaussian2D_mask(fsize,sigma)
-    gaus = (( gaus - np.min(gaus))/ np.max(gaus - np.min(gaus)) * 255 ).astype(np.uint8)
+    # gaus = ( gaus - np.min(gaus))/ np.max(gaus - np.min(gaus))
 
-    DoG_x = (-b/sigma) * gaus
-    DoG_y = (-a/sigma) * gaus
-    DoG_x = DoG_x/np.max(DoG_x)
-    DoG_y = DoG_y/np.max(DoG_y)
+    DoG_x = (-b/sigma**2) * gaus
+    DoG_y = (-a/sigma**2) * gaus
+    # DoG_x = DoG_x/np.max(DoG_x)
+    # DoG_y = DoG_y/np.max(DoG_y)
 
     return DoG_x, DoG_y
 
