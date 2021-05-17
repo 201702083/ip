@@ -54,13 +54,104 @@ def DCT(block, n=8):
             val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
             dst[u, v] = C(u, n) * C(v, n) * val
     return np.round(dst)
-
-def my_zigzag_scanning(???):
+def searchEOB(dst,eob, i):
+    if ( i == 0 ): eob.insert(len(eob),i)
+    else:
+        dst.extend(eob)
+        dst.insert(len(dst),i)
+        eob = []
+    return dst,eob
+def my_zigzag_scanning(blockQ , mode ='encoding', block_size = 8):
     ######################################
     # TODO                               #
     # my_zigzag_scanning 완성             #
     ######################################
-    return ?
+
+    #QuT 된 블럭을 지그재그로 스캔한다.
+    dst = []
+    eob = []
+    i,j = 0 , 0
+    if ( mode == 'encoding'):
+        while (1) :
+            dst,eob = searchEOB(dst,eob,blockQ[i][j])
+            if(i == blockQ.shape[0]-1) & (j == blockQ.shape[1]-1): break
+            # 끝점 도달 시 탈출
+            if ( j < blockQ.shape[1]-1):
+                j +=1
+            # 우측으로 이동가능하면 우측으로 이동
+            else :
+                i + 1
+            # 그렇지 않다면 아래로 이동
+            while(1):
+                if ( i == blockQ.shape[0]-1) | ( j == 0):break
+                #왼쪽 or 아래 가장자리 도달 시 탈출
+                dst, eob = searchEOB(dst, eob, blockQ[i][j])
+                i +=1
+                j -=1
+            #탈출 후 끝점 탐색
+            dst,eob = searchEOB(dst,eob,blockQ[i][j])
+
+            if ( i < blockQ.shape[0]-1):
+                i +=1
+            else :
+                j +=1
+            while(1):
+                if( i == 0) | ( j == blockQ.shape[1]-1):break
+                # 오른쪽 or 위 가장자리 도달 시 탈출
+                # 여기서 끝점 제외 전부 탐색
+                dst, eob = searchEOB(dst, eob, blockQ[i][j])
+                i-=1
+                j+=1
+            # 탈출 후 끝점 탐색
+
+        # 마지막 인덱스 도달 시 해당 인덱스도 탐색해야함
+        dst,eob = searchEOB(dst,eob,blockQ[i][j])
+        if ( len(dst) < (blockQ.shape[0] * blockQ.shape[1])):
+            eob = ['EOB']
+            dst.extend(eob)
+
+
+    else : # 디코딩 모드 zigzag 스캐닝이 된 블록이 들어온다.
+        if (len(blockQ) == block_size): #EOB 가 없는 경우
+            return blockQ
+        else: # EOB가 있는 경우
+            blockQ.pop(len(blockQ)-1) # EOB 를 제거
+            dst = np.zeros((block_size,block_size))
+            count = 0
+            # 1개씩 넣을 때 마다 +1 해줄 것
+            while ( count < len(blockQ)):
+                dst[i,j] = blockQ[count]
+                count +=1
+                if (j < dst.shape[1] - 1):
+                    j += 1
+                # 우측으로 이동가능하면 우측으로 이동
+                else:
+                    i + 1
+                # 그렇지 않다면 아래로 이동
+                while (count < len(blockQ)):
+                    if (i == dst.shape[0] - 1) | (j == 0) : break
+                    # 왼쪽 or 아래 가장자리 도달 시 탈출
+                    dst[i, j] = blockQ[count]
+                    count += 1
+                    i += 1
+                    j -= 1
+                if( count == len(blockQ)): break
+                dst[i, j] = blockQ[count]
+                count += 1
+                if (i < dst.shape[0] - 1):
+                    i += 1
+                else:
+                    j += 1
+                while (count < len(blockQ)):
+                    if (i == 0) | (j == dst.shape[1] - 1) : break
+                    # 오른쪽 or 위 가장자리 도달 시 탈출
+                    dst[i, j] = blockQ[count]
+                    count += 1
+                    i -= 1
+                    j += 1
+
+
+    return dst
 
 def DCT_inv(block, n = 8):
     ###################################################
@@ -68,7 +159,12 @@ def DCT_inv(block, n = 8):
     # DCT_inv 완성                                     #
     # DCT_inv 는 DCT와 다름.                            #
     ###################################################
-
+    x, y = np.mgrid[0:n, 0:n]
+    dst = np.zeros((n , n))
+    for u in range(n):
+        for v in range(n):
+            val = np.sum(block * C(u)*C(v)*np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
+            dst[u, v] = val
     return np.round(dst)
 
 def block2img(blocks, src_shape, n = 8):
@@ -104,9 +200,10 @@ def Encoding(src, n=8):
 
     # zigzag scanning
     zz = []
+    #QnT 는 각 블럭들을 Thresh, quanti 한
     for i in range(len(QnT)):
         zz.append(my_zigzag_scanning(QnT[i]))
-
+    # zz는 list * list
     return zz, src.shape
 
 def Decoding(zigzag, src_shape, n=8):
