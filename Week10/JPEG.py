@@ -24,22 +24,35 @@ def img2block(src, n=8):
     pad_need_h = h % n
     pad_need_w = w % n
 
-    pad_img = np.zeros((pad_need_h,pad_need_w))
-    pad_img[:h,:w] = src
+    pad_img = np.zeros((h + pad_need_h, w + pad_need_w))
+    pad_img[:h,:w] = src.copy()
+    h,w = pad_img.shape
     blocks = []
-    for i in range(h):
-        for j in range(w/n):
-            i *=n
+    for i in range(h//n):
+        i *= n
+        for j in range(w//n):
+            j *=n
             block = pad_img[i:i+n,j:j+n]
         blocks.append(block)
     return np.array(blocks)
 
+def C(w, n=8):
+    if w == 0:
+        return (1 / n) ** 0.5
+    else:
+        return (2 / n) ** 0.5
 
 def DCT(block, n=8):
     ######################################
     # TODO                               #
     # DCT 완성                            #
     ######################################
+    x, y = np.mgrid[0:n, 0:n]
+    dst = np.zeros((n , n))
+    for u in range(n):
+        for v in range(n):
+            val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
+            dst[u, v] = C(u, n) * C(v, n) * val
     return np.round(dst)
 
 def my_zigzag_scanning(???):
