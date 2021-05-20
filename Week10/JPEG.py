@@ -161,9 +161,15 @@ def DCT_inv(block, n = 8):
     ###################################################
     x, y = np.mgrid[0:n, 0:n]
     dst = np.zeros((n , n))
+
+    # C(u)C(v) 과정
+    block[1:,:n] *= np.sqrt(2)
+    block[:n,1:] *= np.sqrt(2)
+    block /= n
+
     for u in range(n):
         for v in range(n):
-            val = np.sum(block * C(u)*C(v)*np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
+            val = np.sum(block*np.cos(((2 * u + 1) * x * np.pi)/(2*n)) * np.cos(((2 * v + 1) * y * np.pi)/(2 * n)))
             dst[u, v] = val
     return np.round(dst)
 
@@ -173,6 +179,19 @@ def block2img(blocks, src_shape, n = 8):
     # block2img 완성                                   #
     # 복구한 block들을 image로 만들기                     #
     ###################################################
+    q,h,w = blocks.shape
+    # Lena => q = 64 , h w = 8,8 / 8x8 array가 64 개 있음
+    #src_shape 는 원본 크기 blocks은 더 클 수도 있음. 모자란 부분을 패딩해줬기 때문
+    dst = np.zeros(src_shape)
+    c = 0
+    dst[0:8,0:8] = blocks[1]
+    print(blocks[c])
+    print(dst)
+    # for  i in range (512//n):
+    #     for j in range( 512//n):
+    #         dst[i*n:n*(i+1), j*n:n*(j+1)] = blocks[c]
+    #         c +=1
+
 
     return dst
 
@@ -244,14 +263,12 @@ def main():
     start = time.time()
     src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
     comp, src_shape = Encoding(src, n=8)
-
     # 과제의 comp.npy, src_shape.npy를 복구할 때 아래 코드 사용하기(위의 2줄은 주석처리하고, 아래 2줄은 주석 풀기)
     #comp = np.load('comp.npy', allow_pickle=True)
     #src_shape = np.load('src_shape.npy')
 
     recover_img = Decoding(comp, src_shape, n=8)
     total_time = time.time() - start
-
     print('time : ', total_time)
     if total_time > 45:
         print('감점 예정입니다.')
