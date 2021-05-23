@@ -15,24 +15,16 @@ def Quantization_Luminance():
     return luminance
 
 def img2block(src, n=8):
-    ######################################
-    # TODO                               #
-    # img2block 완성                      #
-    # img를 block으로 변환하기              #
-    ######################################
     h,w = src.shape
-    pad_need_h = h % n
-    pad_need_w = w % n
-
-    pad_img = np.zeros((h + pad_need_h, w + pad_need_w))
+    pad_h,pad_w = h,w
+    if ( h % n != 0) : pad_h = h + ( n - ( h % n ))
+    if ( w % n != 0) : pad_w = w + ( n - ( w % n ))
+    pad_img = np.zeros((pad_h, pad_w ))
     pad_img[:h,:w] = src.copy()
-    h,w = pad_img.shape
-    print(h,w)
+
     blocks = []
-    print(h//n , w//n)
-    print("h,w !! ")
-    for i in range(h//n):
-        for j in range(w//n):
+    for i in range(pad_h//n):
+        for j in range(pad_w//n):
             block = pad_img[i*n:n*(i+1),j*n:n*(j+1)]
             blocks.append(block)
     return np.array(blocks)
@@ -170,34 +162,22 @@ def DCT_inv(block, n = 8):
     return np.round(dst)
 
 def block2img(blocks, src_shape, n = 8):
-    ###################################################
-    # TODO                                            #
-    # block2img 완성                                   #
-    # 복구한 block들을 image로 만들기                     #
-    ###################################################
-    q,h,w = blocks.shape
-    # Lena => q = 64*64 , h w = 8,8 / 8x8 array가 4096 개 있음
     #src_shape 는 원본 크기 blocks은 더 클 수도 있음. 모자란 부분을 패딩해줬기 때문
-    # 블럭들의 크기
-    count = 0
     rh,rw = src_shape
+    # 진짜 크기
+
     fh,fw = rh,rw
-    print(src_shape)
     if ( rh % n != 0) : fh = rh + ( n-rh%n )
     if ( rw % n != 0) : fw = rw + ( n-rw%n )
+    # 블록들이 딱 들어맞게 패딩해준 크기
+
     dst = np.zeros((fh,fw))
-    # 진짜 크기
-    print(dst.shape)
+    count = 0
     for i in range ( fh // n ):
         for j in range ( fw // n ) :
             dst[ i*n : n*(i+1) , j*n : n*(j+1) ] = blocks[count]
             count +=1
-
     dst = dst[:rh,:rw]
-
-
-
-
     return dst
 
 def Encoding(src, n=8):
