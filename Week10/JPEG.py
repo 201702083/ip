@@ -53,10 +53,9 @@ def DCT(block, n=8):
     for u in range(n):
         for v in range(n):
             val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
-            a = np.cos(((2 * x + 1) * u * np.pi)/(2*n))
-            b = np.cos(((2 * y + 1) * v * np.pi)/(2 * n))
             dst[u, v] = C(u, n) * C(v, n) * val
     return np.round(dst)
+
 def searchEOB(dst,eob, i):
     if ( i == 0 ): eob.insert(len(eob),i)
     else:
@@ -65,11 +64,6 @@ def searchEOB(dst,eob, i):
         eob = []
     return dst,eob
 def my_zigzag_scanning(blockQ , mode ='encoding', block_size = 8):
-    ######################################
-    # TODO                               #
-    # my_zigzag_scanning 완성             #
-    ######################################
-
     #QuT 된 블럭을 지그재그로 스캔한다.
     dst = []
     eob = []
