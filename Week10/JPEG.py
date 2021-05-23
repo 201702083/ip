@@ -27,13 +27,14 @@ def img2block(src, n=8):
     pad_img = np.zeros((h + pad_need_h, w + pad_need_w))
     pad_img[:h,:w] = src.copy()
     h,w = pad_img.shape
+    print(h,w)
     blocks = []
+    print(h//n , w//n)
+    print("h,w !! ")
     for i in range(h//n):
-        i *= n
         for j in range(w//n):
-            j *=n
-            block = pad_img[i:i+n,j:j+n]
-        blocks.append(block)
+            block = pad_img[i*n:n*(i+1),j*n:n*(j+1)]
+            blocks.append(block)
     return np.array(blocks)
 
 def C(w, n=8):
@@ -52,6 +53,8 @@ def DCT(block, n=8):
     for u in range(n):
         for v in range(n):
             val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
+            a = np.cos(((2 * x + 1) * u * np.pi)/(2*n))
+            b = np.cos(((2 * y + 1) * v * np.pi)/(2 * n))
             dst[u, v] = C(u, n) * C(v, n) * val
     return np.round(dst)
 def searchEOB(dst,eob, i):
@@ -112,43 +115,42 @@ def my_zigzag_scanning(blockQ , mode ='encoding', block_size = 8):
 
 
     else : # 디코딩 모드 zigzag 스캐닝이 된 블록이 들어온다.
-        if (len(blockQ) == block_size): #EOB 가 없는 경우
-            return blockQ
-        else: # EOB가 있는 경우
+        dst = np.zeros((block_size, block_size))
+        count = 0
+
+        if (blockQ[-1] == 'EOB'): #EOB 가 있는 경우
             blockQ.pop(len(blockQ)-1) # EOB 를 제거
-            dst = np.zeros((block_size,block_size))
-            count = 0
-            # 1개씩 넣을 때 마다 +1 해줄 것
-            while ( count < len(blockQ)):
-                dst[i,j] = blockQ[count]
-                count +=1
-                if (j < dst.shape[1] - 1):
-                    j += 1
-                # 우측으로 이동가능하면 우측으로 이동
-                else:
-                    i + 1
-                # 그렇지 않다면 아래로 이동
-                while (count < len(blockQ)):
-                    if (i == dst.shape[0] - 1) | (j == 0) : break
-                    # 왼쪽 or 아래 가장자리 도달 시 탈출
-                    dst[i, j] = blockQ[count]
-                    count += 1
-                    i += 1
-                    j -= 1
-                if( count == len(blockQ)): break
+        # 1개씩 넣을 때 마다 +1 해줄 것
+        while (count < len(blockQ)):
+            dst[i, j] = blockQ[count]
+            count += 1
+            if (j < dst.shape[1] - 1):
+                j += 1
+            # 우측으로 이동가능하면 우측으로 이동
+            else:
+                i + 1
+            # 그렇지 않다면 아래로 이동
+            while (count < len(blockQ)):
+                if (i == dst.shape[0] - 1) | (j == 0): break
+                # 왼쪽 or 아래 가장자리 도달 시 탈출
                 dst[i, j] = blockQ[count]
                 count += 1
-                if (i < dst.shape[0] - 1):
-                    i += 1
-                else:
-                    j += 1
-                while (count < len(blockQ)):
-                    if (i == 0) | (j == dst.shape[1] - 1) : break
-                    # 오른쪽 or 위 가장자리 도달 시 탈출
-                    dst[i, j] = blockQ[count]
-                    count += 1
-                    i -= 1
-                    j += 1
+                i += 1
+                j -= 1
+            if (count == len(blockQ)): break
+            dst[i, j] = blockQ[count]
+            count += 1
+            if (i < dst.shape[0] - 1):
+                i += 1
+            else:
+                j += 1
+            while (count < len(blockQ)):
+                if (i == 0) | (j == dst.shape[1] - 1): break
+                # 오른쪽 or 위 가장자리 도달 시 탈출
+                dst[i, j] = blockQ[count]
+                count += 1
+                i -= 1
+                j += 1
 
 
     return dst
@@ -180,17 +182,26 @@ def block2img(blocks, src_shape, n = 8):
     # 복구한 block들을 image로 만들기                     #
     ###################################################
     q,h,w = blocks.shape
-    # Lena => q = 64 , h w = 8,8 / 8x8 array가 64 개 있음
+    # Lena => q = 64*64 , h w = 8,8 / 8x8 array가 4096 개 있음
     #src_shape 는 원본 크기 blocks은 더 클 수도 있음. 모자란 부분을 패딩해줬기 때문
-    dst = np.zeros(src_shape)
-    c = 0
-    dst[0:8,0:8] = blocks[1]
-    print(blocks[c])
-    print(dst)
-    # for  i in range (512//n):
-    #     for j in range( 512//n):
-    #         dst[i*n:n*(i+1), j*n:n*(j+1)] = blocks[c]
-    #         c +=1
+    # 블럭들의 크기
+    count = 0
+    rh,rw = src_shape
+    fh,fw = rh,rw
+    print(src_shape)
+    if ( rh % n != 0) : fh = rh + ( n-rh%n )
+    if ( rw % n != 0) : fw = rw + ( n-rw%n )
+    dst = np.zeros((fh,fw))
+    # 진짜 크기
+    print(dst.shape)
+    for i in range ( fh // n ):
+        for j in range ( fw // n ) :
+            dst[ i*n : n*(i+1) , j*n : n*(j+1) ] = blocks[count]
+            count +=1
+
+    dst = dst[:rh,:rw]
+
+
 
 
     return dst
@@ -212,7 +223,6 @@ def Encoding(src, n=8):
     for block in blocks:
         blocks_dct.append(DCT(block, n=n))
     blocks_dct = np.array(blocks_dct)
-
     #Quantization + thresholding
     Q = Quantization_Luminance()
     QnT = np.round(blocks_dct / Q)
@@ -254,18 +264,21 @@ def Decoding(zigzag, src_shape, n=8):
 
     # block -> img
     dst = block2img(blocks_idct, src_shape=src_shape, n=n)
-
+    dst = dst.astype(np.uint8)
     return dst
 
 
 
 def main():
     start = time.time()
-    src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
-    comp, src_shape = Encoding(src, n=8)
+
+    # src = cv2.imread('../imgs/Lena.png', cv2.IMREAD_GRAYSCALE)
+    #
+    # comp, src_shape = Encoding(src, n=8)
     # 과제의 comp.npy, src_shape.npy를 복구할 때 아래 코드 사용하기(위의 2줄은 주석처리하고, 아래 2줄은 주석 풀기)
-    #comp = np.load('comp.npy', allow_pickle=True)
-    #src_shape = np.load('src_shape.npy')
+    comp = np.load('comp.npy', allow_pickle=True)
+    src_shape = np.load('src_shape.npy')
+
 
     recover_img = Decoding(comp, src_shape, n=8)
     total_time = time.time() - start
