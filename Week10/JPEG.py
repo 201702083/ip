@@ -159,6 +159,7 @@ def DCT_inv(block, n = 8):
         for v in range(n):
             val = np.sum(block*np.cos(((2 * u + 1) * x * np.pi)/(2*n)) * np.cos(((2 * v + 1) * y * np.pi)/(2 * n)))
             dst[u, v] = val
+    dst = np.clip(dst,-128,127) # overflow, underflow predict
     return np.round(dst)
 
 def block2img(blocks, src_shape, n = 8):
@@ -228,9 +229,13 @@ def Decoding(zigzag, src_shape, n=8):
     blocks = blocks * Q
 
     # inverse DCT
+    count = 0
     blocks_idct = []
     for block in blocks:
+        if(count == 403):
+            print()
         blocks_idct.append(DCT_inv(block, n=n))
+        count+=1
     blocks_idct = np.array(blocks_idct)
 
     # add 128
