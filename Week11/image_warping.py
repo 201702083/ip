@@ -32,11 +32,8 @@ def forward(src, M, fit=False):
                 minY = dot[i][1]
             if maxY < dot[i][1]:
                 maxY = dot[i][1]
-        print(minX, maxX, minY, maxY)
-        print( (int(maxY) - int(minY) + 2, int(maxX) - int(minX) + 2) , ' || ' , int(np.ceil(maxY)) - int(np.floor(minY)) , int(np.ceil(maxX)) - int(np.floor(minX)))
 
         dst = np.zeros((int(maxY) - int(minY) + 3, int(maxX) - int(minX) + 3))
-        print(dst.shape)
         N = np.zeros(dst.shape)
 
         for row in range(h):
@@ -52,7 +49,6 @@ def forward(src, M, fit=False):
                 dst_row = P_dst[1][0] - minY
                 dst_col_right = int(np.ceil(dst_col))
                 dst_col_left = int(dst_col)
-
 
                 dst_row_bottom = int(np.ceil(dst_row))
                 dst_row_top = int(dst_row)
@@ -152,11 +148,8 @@ def backward(src, M, fit=False):
                 minY = dot[i][1]
             if maxY < dot[i][1]:
                 maxY = dot[i][1]
-        print(minX, maxX, minY, maxY)
-        print( (int(maxY) - int(minY) + 3, int(maxX) - int(minX) + 3) , ' || ' , int(np.ceil(maxY)) - int(np.floor(minY)) , int(np.ceil(maxX)) - int(np.floor(minX)))
-        print(int(np.ceil(maxY)) - int(np.floor(minY)) , int(np.ceil(maxX)) - int(np.floor(minX)))
-        dst = np.zeros((int(maxY) - int(minY) + 3, int(maxX) - int(minX) + 3))
-        print(dst.shape)
+
+        dst = np.zeros((int(np.ceil(maxY)) - int(np.floor(minY)), int(np.ceil(maxX)) - int(np.floor(minX))))
         h, w = dst.shape
         h_src, w_src = src.shape
 
@@ -168,32 +161,28 @@ def backward(src, M, fit=False):
                     [1]
                 ])
                 P = np.dot(M_inv, P_dst)
-                src_col = P[0][0]
-                src_row = P[1][0]
+                src_col = P[0][0] + int(minX)
+                src_row = P[1][0] + int(minY)
+                if 0 < src_col < w_src-1 and 0 < src_row < h_src-1 :
+                    src_col_right = int(np.ceil(src_col))
+                    src_col_left = int(src_col)
+                    src_row_bottom = int(np.ceil(src_row))
+                    src_row_top = int(src_row)
 
-                src_col_right = int(np.ceil(src_col))
-                src_col_left = int(src_col)
-                src_row_bottom = int(np.ceil(src_row))
-                src_row_top = int(src_row)
+                    s = src_col - src_col_left
+                    t = src_row - src_row_top
 
-                if src_col_right >= w_src or src_row_bottom >= h_src:
-                    continue
-
-                s = src_col - src_col_left
-                t = src_row - src_row_top
-
-                intensity = (1 - s) * (1 - t) * src[src_row_top, src_col_left] \
-                            + s * (1 - t) * src[src_row_top, src_col_right] \
-                            + (1 - s) * t * src[src_row_bottom, src_col_left] \
-                            + s * t * src[src_row_bottom, src_col_right]
-                dst[row, col] = intensity
+                    intensity = (1 - s) * (1 - t) * src[src_row_top, src_col_left] \
+                                + s * (1 - t) * src[src_row_top, src_col_right] \
+                                + (1 - s) * t * src[src_row_bottom, src_col_left] \
+                                + s * t * src[src_row_bottom, src_col_right]
+                    dst[row , col ] = intensity
         dst = dst.astype(np.uint8)
 
     else:
         dst = np.zeros(src.shape)
         h, w = dst.shape
         h_src, w_src = src.shape
-
 
         for row in range(h):
             for col in range(w):
