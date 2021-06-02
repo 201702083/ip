@@ -44,7 +44,7 @@ def DCT(block, n=8):
     dst = np.zeros((n , n))
     for u in range(n):
         for v in range(n):
-            val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 * y + 1) * v * np.pi)/(2 * n)))
+            val = np.sum(block * np.cos(((2 * x + 1) * u * np.pi)/(2*n)) * np.cos(((2 *  y + 1) * v * np.pi)/(2 * n)))
             dst[u, v] = C(u, n) * C(v, n) * val
     return np.round(dst)
 
@@ -154,7 +154,6 @@ def DCT_inv(block, n = 8):
     block[1:,:n] *= np.sqrt(2)
     block[:n,1:] *= np.sqrt(2)
     block /= n
-
     for u in range(n):
         for v in range(n):
             val = np.sum(block*np.cos(((2 * u + 1) * x * np.pi)/(2*n)) * np.cos(((2 * v + 1) * y * np.pi)/(2 * n)))
@@ -229,13 +228,13 @@ def Decoding(zigzag, src_shape, n=8):
     blocks = blocks * Q
 
     # inverse DCT
-    count = 0
+    # count = 0
     blocks_idct = []
     for block in blocks:
-        if(count == 403):
-            print()
+        # if(count == 403): // debuging 용 code
+        #     print()
         blocks_idct.append(DCT_inv(block, n=n))
-        count+=1
+        # count+=1
     blocks_idct = np.array(blocks_idct)
 
     # add 128
@@ -260,11 +259,13 @@ def main():
 
 
     recover_img = Decoding(comp, src_shape, n=8)
+    # sub_img = np.subtract(src,recover_img)
     total_time = time.time() - start
     print('time : ', total_time)
     if total_time > 45:
         print('감점 예정입니다.')
     cv2.imshow('recover img', recover_img)
+    # cv2.imshow('sub_img', sub_img)
     cv2.waitKey()
     cv2.destroyAllWindows()
 
