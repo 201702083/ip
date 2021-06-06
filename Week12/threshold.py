@@ -37,17 +37,19 @@ def get_threshold(src, type='rice'):
 
     if type == 'rice':
         # 한 줄로 작성하세요
-        p = ???
+        p = hist/(h*w)
     else:
         # 여러줄로 작성하셔도 상관 없습니다.
-        p = ???
+        NoneZero = np.sum(hist)-hist[0]
+        hist[0] = 0
+        p = hist / NoneZero
 
     k_opt_warw = []
     k_opt_warb = []
     for k in range(256):
         # 각각 한 줄로 작성하세요
-        q1 = ???
-        q2 = ???
+        q1 = np.sum(p[:k+1]) # 0 ~ k
+        q2 = np.sum(p[k+1:]) # k+1 ~ L-1
 
         # 굳이 할 필요 없는 경우
         if q1 == 0 or q2 == 0:
@@ -56,13 +58,13 @@ def get_threshold(src, type='rice'):
             continue
 
         # 각각 한 줄로 작성하세요 (m1, m2, mg, var1, var2)
-        m1 = ???
-        m2 = ???
+        m1 = np.sum( np.multiply ( [x for x in range(k+1)] , p[:k+1])) / q1
+        m2 = np.sum( np.multiply ( [x for x in range (k+1,256)] , p[k+1:])) / q2
 
-        mg = ???
+        mg = m1*q1 + m2*q2
 
-        var1 = ???
-        var2 = ???
+        var1 = np.sum(np.multiply( [x**2 for x in range(k+1)] , p[:k+1])) / q1 - m1**2
+        var2 = np.sum(np.multiply( [x**2 for x in range(k+1,256)] , p[k+1:])) / q2 - m2**2
 
         # varg = np.sum(np.square(intensity - mg)*p)
 
@@ -71,15 +73,14 @@ def get_threshold(src, type='rice'):
         assert np.abs((q1 * m1 + q2 * m2) - mg) < 1E-6
 
         # 각각 한 줄로 작성하세요 (varw, varb)
-        varw = ???
-        varb = ???
+        varw = q1*var1 + q2*var2
+        varb = q1*q2*(np.square(m1-m2))
 
         k_opt_warw.append(varw)
         k_opt_warb.append(varb)
 
     k_opt_warw = np.array(k_opt_warw)
     k_opt_warb = np.array(k_opt_warb)
-
     # 2개의 결과가 같아야 함
     assert k_opt_warw.argmin() == k_opt_warb.argmax()
 
@@ -88,7 +89,7 @@ def get_threshold(src, type='rice'):
 
 
 def rice_main():
-    src = cv2.imread('../imgs/rice.png', cv2.IMREAD_GRAYSCALE)
+    src = cv2.imread('./rice.png', cv2.IMREAD_GRAYSCALE)
     val, _ = cv2.threshold(src, 0, 255, cv2.THRESH_OTSU)
     print('< cv2.threshold >')
     print(val)
@@ -110,12 +111,10 @@ def meat_main():
     # meat_main 완성                                     #
     # 이 부분은 결과가 잘 나오도록 각자 알아서 구현해보세요       #
     #####################################################
-
-
+    src = np.multiply(mask,meat)
     dst, val = get_threshold(src, 'meat')
     #tip : 4칙연산(그냥 사칙연산 혹은 cv2.사칙연산 잘 사용하기)
-    final = ???
-
+    final = cv2.add(meat,dst)
     cv2.imshow('dst', dst)
     cv2.imshow('final', final)
 
@@ -125,7 +124,7 @@ def meat_main():
 
 def main():
     rice_main()
-    #meat_main()
+    meat_main()
 
 
 if __name__ == '__main__':
